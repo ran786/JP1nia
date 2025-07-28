@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JP1/AJS3 ジョブネットリリース手順書</title>
+    <style>
+        /* 全体的なスタイル設定 */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 20px;
+            padding: 0;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f4f4f4;
+        }
+        /* コンテンツを囲むコンテナのスタイル */
+        .container {
+            max-width: 960px;
+            margin: 20px auto;
+            background: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        /* 見出しのスタイル */
+        h1, h2, h3 {
+            color: #0056b3;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 5px;
+            margin-top: 30px;
+        }
+        h1 {
+            text-align: center;
+            border-bottom: 3px solid #0056b3;
+            padding-bottom: 10px;
+            margin-bottom: 40px;
+        }
+        h2 {
+            color: #007bff;
+        }
+        /* リストのスタイル */
+        ul {
+            list-style-type: disc;
+            margin-left: 20px;
+        }
+        ol {
+            list-style-type: decimal;
+            margin-left: 20px;
+        }
+        /* コードブロック内のインラインコードのスタイル */
+        code {
+            background-color: #eee;
+            padding: 2px 4px;
+            border-radius: 4px;
+            font-family: 'Consolas', 'Monaco', monospace;
+        }
+        /* 複数行のコードブロックのスタイル */
+        pre {
+            background-color: #eee;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto; /* 横スクロールを可能にする */
+        }
+        /* 補足情報のスタイル */
+        .note {
+            background-color: #e6f7ff;
+            border-left: 5px solid #007bff;
+            padding: 10px 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+        }
+        /* 例のスタイルの追加 */
+        .example {
+            background-color: #fffacd;
+            border-left: 5px solid #ffcc00;
+            padding: 10px 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+        }
+        /* 区切り線のスタイル */
+        hr {
+            border: 0;
+            height: 1px;
+            background-color: #ccc;
+            margin: 40px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>JP1/AJS3 ジョブネットリリース手順書 - ジョブネットリリース作業</h1>
+
+        <p>この手順書は、JP1/AJS3のジョブネットをリリースするための詳細な作業手順を説明します。開発環境へのログインから、ジョブネットのエクスポート・インポート、バックアップ、リリース後の確認までを網羅しています。</p>
+
+        <hr>
+
+        <h2>1. 開発環境ログイン</h2>
+        <p><strong>目的:</strong> 開発環境の対象サーバーにログインします。</p>
+        <h3>手順:</h3>
+        <ol>
+            <li>リリース担当者のPCでTeratermを起動します。
+                <div class="note">
+                    <em>補足: Teratermがインストールされていることを確認してください。</em>
+                </div>
+            </li>
+            <li>IPアドレス「<code>10.11.137.107</code>」を入力し、「OK」ボタンを押下します。
+                <div class="note">
+                    <em>補足: それ以外の項目はデフォルト設定で構いません。</em>
+                </div>
+            </li>
+            <li>ユーザー情報（ユーザー名「<code>root</code>」）を入力し、「OK」ボタンを押下します。
+                <div class="note">
+                    <em>補足: ジョブネット情報をエクスポートできる権限を持つユーザーであることを確認してください。</em>
+                </div>
+            </li>
+            <li>ログインが成功したことを確認します。</li>
+        </ol>
+
+        <hr>
+
+        <h2>2. ジョブネット情報のエクスポート（開発環境から）</h2>
+        <p><strong>目的:</strong> 作業用フォルダを作成し、ジョブネット情報をエクスポートします。</p>
+        <h3>手順:</h3>
+        <ol>
+            <li><strong>作業フォルダの作成:</strong>
+                <ul>
+                    <li><code>ls -l wk_yyyymmdd*</code> コマンド（<code>yyyymmdd</code>は当日日付）で既存の作業フォルダを確認します。</li>
+                    <li>存在しない場合は、<code>mkdir wk_yyyymmdd01</code> コマンドで作業フォルダを作成します。</li>
+                    <li>既に存在する場合は、枝番をカウントアップした作業フォルダを作成します。（例: <code>wk_2024090301</code>が存在する場合、<code>mkdir wk_2024090302</code>）</li>
+                </ul>
+            </li>
+            <li><strong>作成した作業フォルダへ移動:</strong>
+                <ul>
+                    <li><code>cd &lt;作成した作業フォルダ名&gt;</code> コマンドを実行します。（例: <code>cd wk_2024090902</code>）</li>
+                </ul>
+            </li>
+            <li><strong>ジョブネット情報のエクスポート:</strong>
+                <ul>
+                    <li>エクスポートしたい各ジョブネットに対し、以下のコマンドを実行します。
+                        <pre><code>/opt/jp1ajs2/bin/ajsprint -a "/ジョブグループ/エクスポートしたいジョブネット" >出力ファイル名</code></pre>
+                    </li>
+                    <li><em>例:</em> ジョブグループが<code>release_test</code>、エクスポートしたいジョブネットが<code>abc_test_1</code>、出力ファイル名が<code>abc_test_1</code>の場合：
+                        <pre><code>/opt/jp1ajs2/bin/ajsprint -a "/release_test/abc_test_1" > abc_test_1</code></pre>
+                    </li>
+                    <div class="note">
+                        <em>補足: エクスポートするジョブネット名と出力ファイル名を同じにしてください。</em><br>
+                        <em>補足: エクスポート対象のジョブネット情報が複数ある場合は、複数回コマンドを実行します。</em>
+                    </div>
+                </ul>
+            </li>
+            <li><strong>出力されたファイルの確認:</strong>
+                <ul>
+                    <li><code>ls -l &lt;出力ファイル名&gt;</code> コマンドでファイルが作成されていることを確認します。（例: <code>ls -l abc_test_1</code>）</li>
+                </ul>
+            </li>
+            <li><strong>エクスポートしたジョブネット情報をローカル環境にダウンロード:</strong>
+                <ul>
+                    <li>プロジェクト用フォルダや案件フォルダに保存します。フォルダがない場合は、プロジェクト名や案件名でフォルダを作成します。</li>
+                </ul>
+            </li>
+        </ol>
+
+        <hr>
+
+        <h2>3. ジョブネット情報のアップロード（商用環境へ）</h2>
+        <p><strong>目的:</strong> WinSCPを使用して商用環境にログインし、作業場所を作成します。</p>
+        <h3>手順:</h3>
+        <ol>
+            <li>商用環境にWinSCPでログインします。
+                <div class="note">
+                    <em>補足: WinSCPが存在しない場合、インストールしてください。 (<a href="file://fs02/全社共通2/project/CSシステム移行プロジェクト/01_再編成/02_LIBMO/98_Tool/WinSCP" target="_blank">\\fs02\全社共通2\project\CSシステム移行プロジェクト\01_再編成\02_LIBMO\98_Tool\WinSCP</a>を参照)</em>
+                </div>
+                <ul>
+                    <li>以下の接続情報を入力し、「保存」→「ログイン」ボタンを押下します。
+                        <ul>
+                            <li><strong>ホスト名:</strong> <code>10.8.154.107</code></li>
+                            <li><strong>ユーザー名:</strong> <code>root</code></li>
+                            <li><strong>パスワード:</strong> <code>*****</code></li>
+                        </ul>
+                        <em>その他の項目はデフォルトで構いません。</em>
+                    </li>
+                    <div class="note">
+                        <em>補足: ログインユーザー（例: <code>tc1fujikawa</code>など）がジョブネット情報をインポートできる権限を持っていることを確認してください。</em>
+                    </div>
+                </ul>
+            </li>
+            <li><strong>作業場所の作成:</strong>
+                <ul>
+                    <li>5世代前の作業場所は削除します。</li>
+                    <li>任意のフォルダが作成できることを確認します。</li>
+                </ul>
+            </li>
+        </ol>
+
+        <hr>
+
+        <h2>4. バックアップ（新規作成の場合はスキップ）</h2>
+        <p><strong>目的:</strong> 既存のジョブネット情報を商用環境からバックアップします。</p>
+        <h3>手順:</h3>
+        <ol>
+            <li>商用環境にTeratermでログインします。</li>
+            <li>ステップ3で作成した作業場所へ移動します。</li>
+            <li><strong>リリース対象のジョブネット情報をエクスポートします。</strong>
+                <ul>
+                    <li>コマンド:
+                        <pre><code>/opt/jp1ajs2/bin/ajsprint -a "/ジョブグループ名/ジョブネット名" > エクスポート先ファイル</code></pre>
+                    </li>
+                    <li><em>例:</em>
+                        <pre><code>/opt/jp1ajs2/bin/ajsprint -a "/release_test/abc_test_1" > abc_test_1</code></pre>
+                    </li>
+                </ul>
+            </li>
+            <li><strong>エクスポートファイルが作成されていることを確認します。</strong>
+                <ul>
+                    <li>コマンド: <code>ls -l &lt;ジョブネット名&gt;</code> （例: <code>ls -l abc_test_1</code>）</li>
+                </ul>
+            </li>
+            <li><strong>商用環境の作業場所からエクスポートファイルをコピーし、開発環境の作業場所に貼り付けます。</strong></li>
+            <li><strong>コピーしたファイルが存在していることを確認します。</strong></li>
+            <li><strong>商用と開発でエクスポートしたジョブネットをdiffコマンドで比較します（開発環境で実行）。</strong>
+                <ul>
+                    <li>コマンド:
+                        <pre><code>diff エクスポートしたジョブネット アップロードしたジョブネット</code></pre>
+                    </li>
+                    <li><em>例:</em> <code>diff abc_test_1 abc_test_1_比較用</code></li>
+                    <div class="note">
+                        <em>補足: 変更箇所が意図した箇所だけであることを確認します。そうでない場合は、リリースを停止してください。</em>
+                    </div>
+                </ul>
+            </li>
+        </ol>
+
+        <hr>
+
+        <h2>5. インポート前作業</h2>
+        <p><strong>目的:</strong> エクスポートしたファイルのジョブネット名とエージェントを変更します。</p>
+        <h3>手順:</h3>
+        <ol>
+            <li><strong>エージェントの変更（開発環境: 10.11.137.107 のTeratermで実施）:</strong>
+                <ul>
+                    <li>作成した作業場所で以下のコマンドを実行します。
+                        <pre><code>sed -i s/'ex=""旧エージェント"";'/'ex=""新エージェント"";'/ 変更したいファイル名</code></pre>
+                    </li>
+                    <li><em>例:</em> 旧エージェント<code>batstgb</code>を新エージェント<code>batsrvb</code>に、ファイル名<code>vp1fujikawa_vp1fujikawa_d_9_envtest_exp.txt</code>を変更する場合：
+                        <pre><code>sed -i s/'ex=""batstgb"";'/'ex=""batsrvb"";'/ vp1fujikawa_vp1fujikawa_d_9_envtest_exp.txt</code></pre>
+                    </li>
+                </ul>
+            </li>
+            <li><strong>ジョブネット名の変更:</strong>
+                <ul>
+                    <li>以下のコマンドを実行します。
+                        <pre><code>sed -i "s/unit=ジョブネット名/unit=ジョブネット名_$(date +%Y%m%d)/g" エクスポートファイル名</code></pre>
+                    </li>
+                    <li><em>例:</em>
+                        <pre><code>sed -i "s/unit=abc_test_1/unit=abc_test_1_$(date +%Y%m%d)/g" abc_test_1</code></pre>
+                    </li>
+                </ul>
+            </li>
+        </ol>
+
+        <hr>
+
+        <h2>6. インポート</h2>
+        <p><strong>目的:</strong> 変更したジョブネット情報を商用環境にインポートします。</p>
+        <h3>手順:</h3>
+        <ol>
+            <li>商用環境のTeratermで実施します。</li>
+            <li>作成した作業場所へ移動します。</li>
+            <li><strong>ジョブネット情報のインポート:</strong>
+                <ul>
+                    <li>以下のコマンドを実行します。
+                        <pre><code>/opt/jp1ajs2/bin/ajsdefine -F AJSROOT1 -f -d "/ジョブグループ名" ./インポートするファイル名</code></pre>
+                    </li>
+                    <li><em>例:</em> ジョブグループ名が<code>release_test</code>、インポートするファイル名が<code>abc_test_1</code>の場合：
+                        <pre><code>/opt/jp1ajs2/bin/ajsdefine -F AJSROOT1 -f -d "/release_test" ./abc_test_1</code></pre>
+                    </li>
+                    <div class="note">
+                        <em>補足: 実行後、何もメッセージが出力されないことを確認してください。</em>
+                    </div>
+                </ul>
+            </li>
+        </ol>
+
+        <hr>
+
+        <h2>7. リリース登録</h2>
+        <p><strong>目的:</strong> 商用環境でジョブネットのリリース登録を行います。</p>
+        <h3>手順:</h3>
+        <ol>
+            <li><strong>商用環境ログイン:</strong>
+                <ul>
+                    <li>商用環境にリモートデスクトップで接続します。接続先IPは<code>10.8.154.106</code>です。</li>
+                    <li>Windowsメニューより、JP1/Automatic Job Management System 3の「ジョブシステム運用」を起動します。</li>
+                    <li>ログイン画面が表示されるので、ユーザー名（<code>jp1isp</code>）とパスワード（<code>******</code>）を入力し、「OK」ボタンを押下します。</li>
+                </ul>
+            </li>
+            <li><strong>リリース登録を行う（新規作成の場合はスキップ）:</strong>
+                <ol>
+                    <li>機能メニューより、「リリース登録」を選択します。</li>
+                    <li>対象のジョブネットを選択します（変更したジョブネットを選択）。</li>
+                    <li><strong>保留:</strong> リリース日時は翌日の<code>0時0分</code>に設定します。</li>
+                    <li>「OK」ボタンを押下します。
+                        <ul>
+                            <li><em>リリース先:</em> リリースしたいジョブネット</li>
+                            <li><em>リリースID:</em> <code>YYYYMMDD</code></li>
+                            <li><em>リリースコメント:</em> 任意</li>
+                            <li><em>リリース登録後の動作:</em> デフォルト</li>
+                        </ul>
+                    </li>
+                    <li>リリース先で選択したジョブネットのアイコンが適切に表示されていることを確認します。</li>
+                </ol>
+            </li>
+        </ol>
+
+        <hr>
+
+        <h2>8. リリース後確認作業</h2>
+        <p><strong>目的:</strong> 商用環境のジョブシステム運用ツールで、ジョブネットの更新内容と計画実行を確認します。</p>
+        <h3>手順:</h3>
+        <ol>
+            <li><strong>商用環境のジョブシステム運用ツールで確認します。</strong>
+                <ul>
+                    <li>リリース日時に、対象のジョブネットが更新されていることを確認します（次の実行タイミングまでに確認）。</li>
+                    <li>アップロードした内容の通り、ジョブネットの内容が変更されていることを確認します。</li>
+                </ul>
+            </li>
+            <li><strong>ジョブネットのプロパティ確認:</strong>
+                <ul>
+                    <li>対象のジョブネット（ここでは<code>abc_test_1</code>）を右クリックし、「プロパティ」を選択します。</li>
+                    <li>プロパティが開かれるので、Teratermで変更した箇所が変わっているか確認します。</li>
+                    <li><strong>以下の項目を確認します:</strong>
+                        <ul>
+                            <li>ユニット名</li>
+                            <li>実行エージェント</li>
+                            <li>多重起動</li>
+                            <li>保存世代数</li>
+                            <li>コマンド文</li>
+                            <li>終了判定</li>
+                            <li>実行時のユーザー</li>
+                        </ul>
+                    </li>
+                </ul>
+            </li>
+            <li><strong>計画実行の予定を確認（新規作成の場合はスキップ）:</strong>
+                <ul>
+                    <li>機能メニューが表示されている状態であることを確認します。</li>
+                    <li>「機能メニュー」より、「ステータス監視」を押下し、「マンスリースケジュール」を押下します。</li>
+                    <li>計画実行の予定を確認します。実行日に水色の四角「□」が表示されていることを確認します。</li>
+                </ul>
+            </li>
+        </ol>
+    </div>
+</body>
+</html>
